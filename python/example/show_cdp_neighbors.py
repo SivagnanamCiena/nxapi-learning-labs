@@ -12,7 +12,7 @@
 # specific language governing permissions and limitations under the License.
 
 """
-Demonstrate how to obtain routing information of one network device.
+Demonstrate how to discover the network neighbors of one network device.
 
 1. Select a configured device from the inventory.
 2. Execute the command and print the output.
