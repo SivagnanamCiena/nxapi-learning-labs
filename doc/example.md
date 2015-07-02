@@ -1,4 +1,6 @@
-#NX-API Learning Labs: Examples
+#NX-API Learning Lab
+
+##Examples
 
 * [show version](show_version.md)
 * [show ip interface brief](show_ip_interface_brief.md)
