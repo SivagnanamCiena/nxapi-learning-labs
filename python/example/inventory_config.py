@@ -13,10 +13,12 @@
 
 """
 List of configuration information of each device in the inventory.
+
+@author: Ken Jarrad (kjarrad@cisco.com)
 """
 from __future__ import print_function
 from inspect import cleandoc
-from logging import log, WARN, INFO as INFO
+from logging import log, WARN
 from nxapi.http import  connect, disconnect, session_device_url
 from nxapi.context import sys_exit, EX_OK, EX_TEMPFAIL
 from nxapi.render import print_table
@@ -44,7 +46,7 @@ def main():
             http_session = connect(**device_config)
             print('Connected to', session_device_url(http_session))
             disconnect(http_session)
-        except IOError as ioe:
+        except IOError:
             log(WARN, 'Unable to connect to Nexus device %s', str(device_config))
             exit_code = EX_TEMPFAIL
             continue

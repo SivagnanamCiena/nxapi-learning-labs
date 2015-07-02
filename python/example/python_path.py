@@ -13,10 +13,13 @@
 
 """
 Print Python's sys.path as a list of entries.
+
+@author: Ken Jarrad (kjarrad@cisco.com)
 """
 # Requires: pip install future
 from __future__ import print_function    
 import sys
+
 print('sys.path')
 print('--------')
 [print(entry) for entry in sys.path]

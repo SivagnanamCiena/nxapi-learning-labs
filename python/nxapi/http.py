@@ -17,14 +17,11 @@
 '''
 
 from __future__ import print_function as _print_function
-from requests import post, get, request, Session
-from requests.auth import HTTPBasicAuth
-from requests.exceptions import RequestException
-from logging import log, WARN as DEFAULT_LOG_LEVEL
+from requests import Session
 from json import dumps
 from collections import namedtuple
-from itertools import chain
 from tabulate import tabulate
+from logging import log, WARN
 
 _ins_api_version = '1.2'
 
@@ -92,11 +89,11 @@ def json_rpc(session, commands=('show version', 'show route-map'), command_type=
                 'Accept' : 'application/json'
             }
         )
-    #print('status code', response.status_code)
+    # print('status code', response.status_code)
     response.raise_for_status()
     assert response.headers['Content-type'].endswith('/json-rpc')
     response_json = response.json()
-    if isinstance(response_json,list):
+    if isinstance(response_json, list):
         return {response_element['id'] : response_element['result'] for response_element in response_json}
     else:
         return {response_json['id'] : response_json['result']}
@@ -122,7 +119,7 @@ def cli(session, commands=('show version', 'show route-map'), command_type='cli_
             data=request_payload,
             headers={'Accept':'application/json'}
         )
-    #print('status code', response.status_code)
+    # print('status code', response.status_code)
     response.raise_for_status()
     assert response.headers['Content-type'].endswith('/json')
     response_data = response.json()
@@ -150,26 +147,35 @@ def _split_schema_field_info(schema_field_info):
             else (schema_field_info, None) if len(schema_field_info) != 0 \
             else (None, None)
     return (
-        field_type if field_type and len(field_type) != 0 else None, 
+        field_type if field_type and len(field_type) != 0 else None,
         field_description if field_description and len(field_description) != 0 else None
     )
 
 def _unpack_schema_fields(schema_table):
-    return {field_name:_split_schema_field_info(field_info) for (field_name,field_info) in schema_table.items()}
+    return {field_name:_split_schema_field_info(field_info) for (field_name, field_info) in schema_table.items()}
                           
 def cli_schema(session, commands=('show version', 'show ip interface brief')):
     response_table = json_rpc(session=session, commands=commands, command_type='cli_schema')
     return {response['cmd'] : (response['syntax'], _unpack_schema_fields(response['doc']))
             for response in response_table.values()}
     
-def print_command_schema(schema_table):
-    for (command,(syntax,field_table)) in schema_table.items():
-        print()
-        print(tabulate([(command,syntax)],headers=('command','syntax')))
-        print()
-        alist=[(field_name,field_info[0],field_info[1]) for (field_name,field_info) in field_table.items()]
-        print('Command Schema Fields:')
-        print(tabulate(alist,headers=('name','type','description')))
+def print_command_reference(http_session, command):
+    try:
+        print('Command Reference:')
+        response = cli_schema(http_session, command)
+        for (command, (syntax, field_table)) in response.items():
+            print()
+            print(tabulate([(command, syntax)], headers=('command', 'syntax')))
+            print()
+            alist = [(field_name, field_info[0], field_info[1]) for (field_name, field_info) in field_table.items()]
+            print('Command Schema Fields:')
+            print()
+            print(tabulate(alist, headers=('name', 'type', 'description')))
+        return True
+    except IOError as ioe:
+        log(WARN, 'Swallow error retrieving schema(s) for %s %s', str(command), str(ioe))
+        print('No schema available for command(s):', command)
+        return False
     
 def _command_body(command_output):
     """ Check the output of a command for errors.
@@ -217,56 +223,3 @@ def _command_namedtuple(command_input, command_output):
         o = nt()
     print(o)
     return o
-    
-def main():
-    session = connect()
-    executed_commands = cli_show(session)
-    # print(dumps(executed_commands,indent=2))
-    for (k, v) in executed_commands.items():
-        print(_command_namedtuple(k, v))
-        print(_command_namedtuple(k, v))
-        
-    tu = _command_namedtuple(k, v)
-    m = tu.memory
-    nm = tu.not_memory
-    print('memory', tu.memory)
-    kicker = tu.kick_file_name
-    print('complete kick', kicker)
-        
-    print(dumps(cli_show(session, 'show ip interface mgmt 0'), indent=2))
-    for (k, v) in cli_show(session, 'show ip int mgmt 0').items():
-        print(_command_namedtuple(k, v))
-    
-    # print(dumps(cli_show(session,'show cli list'),indent=2))
-    
-    # ken, use list of tuple(cmd/,output) not map{cmd:output} due to ordering of cmds and repeat of cmds
-    
-    # print(dir(session))
-    # print(session.__dict__)
-    # print(dir(session.adapters['http://']))
-    # print(session.adapters['http://'].__dict__)
-    # print(session.cookies['command-url'])
-    
-    
-    # help(request)
-    # for i in xrange(1, 13):
-    #     nexus_authentication_token()
-    #     for c in _session.cookies:
-    #         print(c)
-    #         print(dir(c))
-    #         print('port', c.port)
-    #         print('comment', c.comment)
-    #         print('discard', c.discard)
-    #         print('comment_url', c.comment_url)
-    #         print('expires', c.expires)
-    #         print('is_expired', c.is_expired())
-    #         print('name', c.name)
-    #         print('path', c.path)
-    #         print('path_specified', c.path_specified)
-    #         print('secure', c.secure)
-    #         print('value', c.value)
-    #         print('version', c.version)
-    
-    #     for field in dir(c):
-    #         print(field, c.__dir__[field])
-    # print(_nexus_authentication_cookie_jar[_nexus_authentication_cookie_name])
