@@ -1,0 +1,13 @@
+.DS_Store
+dist
+*.pyc
+generated
+.cache
+.ipynb_checkpoints
+.pip
+env
+venv
+virtualenv
+*.egg-info
+*.egg
+build
