@@ -22,14 +22,15 @@ from logging import log, WARN
 from nxapi.http import  connect, disconnect, session_device_url
 from nxapi.context import sys_exit, EX_OK, EX_TEMPFAIL
 from nxapi.render import print_table
-from example import inventory_config, inventory_config_path
+from example import inventory_config, config_module
+from inspect import getfile
 
 def main():
     """ Print documentation; Print configuration of each device."""
     print(cleandoc(__doc__))
     print()
     
-    print('Loaded from:', inventory_config_path)
+    print('Loaded from:', getfile(config_module))
     print()
     
     if not inventory_config:

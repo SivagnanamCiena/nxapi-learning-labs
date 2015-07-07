@@ -82,6 +82,8 @@
 from __future__ import print_function as _print_function
 import os
 import sys
+from os.path import isabs
+import imp
 
 # successful termination
 EX_OK = getattr(os, "EX_OK", 0)
@@ -121,3 +123,37 @@ def sys_exit(code):
     except NameError:
         # System exit raises an exception which seems overkill but is the standard.
         sys.exit(code)
+
+def load_module(module_name, module_file_name, module_dir):
+    """ Load a Python module from a specific file and return it.
+    
+    Any file extension in the module_file_name is ignored.
+    The module is loaded from the compiled-python file if it exists (extension 
+	.pyc). If the config file is newer than the compiled file then the compiled 
+	file is ignored.
+	
+	The module does not need to be on the Python path.
+	
+	If the module_file_name is an absolute path then the module_dir is ignored, 
+	otherwise the module_file_name is joined to the module_dir. 
+    """
+    (module_file_name, _) = os.path.splitext(module_file_name)
+    if isabs(module_file_name):
+        uri = module_file_name
+    else:
+        uri = os.path.join(module_dir, module_file_name)
+        uri = os.path.normpath(uri)
+    source_file_name = uri + '.py'
+    compiled_file_name = uri + '.pyc'
+    if os.path.exists(compiled_file_name):
+        if os.path.exists(source_file_name) \
+        and os.path.getmtime(source_file_name) > os.path.getmtime(compiled_file_name): 
+            module = imp.load_source(module_name, source_file_name)
+        else:
+            module = imp.load_compiled(module_name, compiled_file_name)
+    elif os.path.exists(source_file_name):
+        module = imp.load_source(module_name, source_file_name)
+    else:
+        raise ImportError('Module not found:', source_file_name)
+    assert module.__name__ == module_name
+    return module

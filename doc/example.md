@@ -12,3 +12,6 @@
 
 The examples use the topology contained in file [topology/NXandXR.virl](../topology/NXandXR.virl)
 which looks like this ![topology](topology.png)
+
+##Configuration
+Detailed instructions are provided in the comments of Python package [example](../python/example/__init__.py).
