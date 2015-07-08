@@ -12,7 +12,7 @@
 # specific language governing permissions and limitations under the License.
 
 """
-Demonstrate how to obtain a brief description of the network interfaces of one network device.
+Demonstrate how to obtain the details of a network 'management' interface, on one network device.
 
 1. Select a configured device from the inventory.
 2. Execute the command and print the output.
